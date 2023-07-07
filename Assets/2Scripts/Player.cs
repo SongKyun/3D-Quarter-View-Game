@@ -52,6 +52,9 @@ public class Player : MonoBehaviour
 
     bool isBorder;
 
+    bool isDamage;
+    MeshRenderer[] meshs;
+
     Vector3 moveVec;
     Vector3 dodgeVec;
 
@@ -66,6 +69,7 @@ public class Player : MonoBehaviour
     {
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>(); // 자식에는 Children
+        meshs = GetComponentsInChildren<MeshRenderer>(); // s가 붙어 모든 자식 컴포넌트를 가지고 온다
     }
 
     void Update()
@@ -237,7 +241,38 @@ public class Player : MonoBehaviour
                     hasGrenades += item.value;
                     break;
             }
-            Destroy(other.gameObject);
+           Destroy(other.gameObject);
+        }
+        else if (other.tag == "EnemyBullet")
+        {
+            if (!isDamage)
+            {
+                Bullet enemyBullet = other.GetComponent<Bullet>();
+                health -= enemyBullet.damage;
+
+                if (other.GetComponent<Rigidbody>() != null)
+                    Destroy(other.gameObject);
+
+                StartCoroutine(OnDamage());
+            }
+        }
+    }
+
+    IEnumerator OnDamage()
+    {
+        isDamage = true;
+        
+        foreach (MeshRenderer mesh in meshs)
+        {
+            mesh.material.color = Color.yellow;
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        isDamage = false;
+        foreach (MeshRenderer mesh in meshs)
+        {
+            mesh.material.color = Color.white;
         }
     }
 
